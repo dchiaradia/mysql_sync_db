@@ -1,0 +1,105 @@
+services:
+  # MySQL Source Database
+  mysql_source:
+    image: mysql:8.0
+    container_name: mysql_source
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_SOURCE_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_SOURCE_DB}
+      MYSQL_DEFAULT_AUTHENTICATION_PLUGIN: mysql_native_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_source_data:/var/lib/mysql
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_SOURCE_PASSWORD}"]
+      timeout: 30s
+      retries: 15
+      interval: 10s
+      start_period: 60s
+    networks:
+      - database_sync_network
+
+  # MySQL Destination Database
+  mysql_destination:
+    image: mysql:8.0
+    container_name: mysql_destination
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_DESTINATION_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DESTINATION_DB}
+      MYSQL_DEFAULT_AUTHENTICATION_PLUGIN: mysql_native_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_destination_data:/var/lib/mysql
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_DESTINATION_PASSWORD}"]
+      timeout: 30s
+      retries: 15
+      interval: 10s
+      start_period: 60s
+    networks:
+      - database_sync_network
+
+  # Backend API - Python
+  backend:
+    build: ./backend
+    container_name: database_sync_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_TYPE=${DATABASE_TYPE}
+      - SOURCE_USER=${SOURCE_USER}
+      - SOURCE_PASSWORD=${SOURCE_PASSWORD}
+      - SOURCE_DB=${SOURCE_DB}
+      - SOURCE_HOST=${SOURCE_HOST}
+      - SOURCE_PORT=${SOURCE_PORT}
+      - DESTINATION_USER=${DESTINATION_USER}
+      - DESTINATION_PASSWORD=${DESTINATION_PASSWORD}
+      - DESTINATION_DB=${DESTINATION_DB}
+      - DESTINATION_HOST=${DESTINATION_HOST}
+      - DESTINATION_PORT=${DESTINATION_PORT}
+      - DEBUG=${DEBUG}
+    env_file:
+      - .env
+    depends_on:
+      mysql_source:
+        condition: service_healthy
+      mysql_destination:
+        condition: service_healthy
+    networks:
+      - database_sync_network
+    restart: unless-stopped
+
+  # Frontend Flutter Web
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        API_BASE_URL: ${API_BASE_URL:-/api/v1/database}
+        APP_TITLE: ${APP_TITLE:-Database Sync}
+        IS_DEVELOPMENT: ${IS_DEVELOPMENT:-false}
+        ENABLE_DEBUG: ${ENABLE_DEBUG:-false}
+    container_name: database_sync_frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    env_file:
+      - .env
+    depends_on:
+      backend:
+        condition: service_started
+    networks:
+      - database_sync_network
+    restart: unless-stopped
+
+volumes:
+  mysql_source_data:
+  mysql_destination_data:
+
+networks:
+  database_sync_network:
+    driver: bridge
