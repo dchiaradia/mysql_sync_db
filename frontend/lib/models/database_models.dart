@@ -207,3 +207,135 @@ class HealthCheck {
     };
   }
 }
+
+// Cron Job Models
+enum CronJobStatus { active, paused, removed }
+
+class CronJobCreate {
+  final String name;
+  final String cronExpression;
+  final String? description;
+  final bool overwrite;
+  final int maxTables;
+
+  CronJobCreate({
+    required this.name,
+    required this.cronExpression,
+    this.description,
+    this.overwrite = false,
+    this.maxTables = 10,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'cron_expression': cronExpression,
+      'description': description,
+      'overwrite': overwrite,
+      'max_tables': maxTables,
+    };
+  }
+}
+
+class CronJobResponse {
+  final String id;
+  final String name;
+  final String cronExpression;
+  final String? description;
+  final CronJobStatus status;
+  final DateTime? nextRun;
+  final DateTime createdAt;
+  final DateTime? lastRun;
+  final bool overwrite;
+  final int maxTables;
+
+  CronJobResponse({
+    required this.id,
+    required this.name,
+    required this.cronExpression,
+    this.description,
+    required this.status,
+    this.nextRun,
+    required this.createdAt,
+    this.lastRun,
+    required this.overwrite,
+    required this.maxTables,
+  });
+
+  factory CronJobResponse.fromJson(Map<String, dynamic> json) {
+    return CronJobResponse(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      cronExpression: json['cron_expression'] ?? '',
+      description: json['description'],
+      status: CronJobStatus.values.firstWhere(
+        (e) => e.toString().split('.').last == json['status'],
+        orElse: () => CronJobStatus.active,
+      ),
+      nextRun: json['next_run'] != null
+          ? DateTime.parse(json['next_run'])
+          : null,
+      createdAt: DateTime.parse(json['created_at']),
+      lastRun: json['last_run'] != null
+          ? DateTime.parse(json['last_run'])
+          : null,
+      overwrite: json['overwrite'] ?? false,
+      maxTables: json['max_tables'] ?? 10,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'cron_expression': cronExpression,
+      'description': description,
+      'status': status.toString().split('.').last,
+      'next_run': nextRun?.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
+      'last_run': lastRun?.toIso8601String(),
+      'overwrite': overwrite,
+      'max_tables': maxTables,
+    };
+  }
+}
+
+class CronJobList {
+  final List<CronJobResponse> jobs;
+  final int total;
+
+  CronJobList({required this.jobs, required this.total});
+
+  factory CronJobList.fromJson(Map<String, dynamic> json) {
+    return CronJobList(
+      jobs:
+          (json['jobs'] as List<dynamic>?)
+              ?.map((job) => CronJobResponse.fromJson(job))
+              .toList() ??
+          [],
+      total: json['total'] ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'jobs': jobs.map((job) => job.toJson()).toList(), 'total': total};
+  }
+}
+
+class CronJobDelete {
+  final bool success;
+  final String message;
+
+  CronJobDelete({required this.success, required this.message});
+
+  factory CronJobDelete.fromJson(Map<String, dynamic> json) {
+    return CronJobDelete(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'success': success, 'message': message};
+  }
+}

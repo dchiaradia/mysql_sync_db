@@ -12,6 +12,7 @@ O sistema oferece uma interface web intuitiva para visualizar, comparar e sincro
 - **Comparação de Tabelas**: Visualiza diferenças entre bancos de origem e destino
 - **Sincronização de Dados**: Sincroniza dados entre tabelas correspondentes
 - **Interface Web Responsiva**: Interface moderna desenvolvida com Flutter Web
+- **Cron Jobs**: Agendamento de sincronizações de tabelas - Agendamento persistido em memória
 - **API RESTful**: Backend robusto com FastAPI
 - **Suporte a Múltiplos Bancos**: Arquitetura preparada para diferentes tipos de banco de dados
 - **Docker Compose**: Deploy simplificado com containers
@@ -98,15 +99,8 @@ docker-compose up -d
 
 ## 📊 Bancos de Dados
 
-O projeto inclui dois bancos MySQL com dados de exemplo:
+O projeto inclui dois bancos MySQL com dados de exemplo (source_db e destination_db)
 
-### Banco de Origem (source_db)
-- Tabelas: `users`, `products`, `orders`
-- Dados de exemplo incluídos
-
-### Banco de Destino (destination_db)
-- Tabelas: `users`, `products`, `categories`
-- Dados de exemplo (parcial)
 
 ## 🔧 Desenvolvimento
 

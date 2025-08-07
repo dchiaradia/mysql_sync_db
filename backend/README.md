@@ -87,9 +87,19 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 ### Database Operations
 - `GET /api/v1/database/health` - Health check específico do banco
-- `GET /api/v1/database/tables` - Lista todas as tabelas disponíveis
-- `GET /api/v1/database/compare/{table_name}` - Compara dados de uma tabela
-- `POST /api/v1/database/sync/{table_name}` - Sincroniza dados de uma tabela
+- `GET /api/v1/database/source/tables` - Lista tabelas do banco de origem
+- `GET /api/v1/database/destination/tables` - Lista tabelas do banco de destino
+- `GET /api/v1/database/compare` - Compara os bancos de origem e destino
+- `GET /api/v1/database/summary` - Resumo completo dos bancos
+- `POST /api/v1/database/migrate/{table_name}` - Migra uma tabela específica
+- `POST /api/v1/database/migrate-batch` - Migra múltiplas tabelas em lote
+
+### Cron Jobs (Sincronização Automática)
+- `POST /api/v1/cron/jobs` - Cadastra um novo cron job para sincronização automática
+- `GET /api/v1/cron/jobs` - Lista todos os cron jobs cadastrados
+- `DELETE /api/v1/cron/jobs/{job_id}` - Remove um cron job específico
+- `GET /api/v1/cron/jobs/count` - Retorna o número total de cron jobs
+
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -98,6 +108,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 - **PyMySQL**: Driver MySQL para Python
 - **Pydantic**: Validação de dados e serialização
 - **Uvicorn**: Servidor ASGI
+- **APScheduler**: Agendamento de tarefas (cron jobs)
 - **Python-dotenv**: Gerenciamento de variáveis de ambiente
 
 ## 📦 Dependências

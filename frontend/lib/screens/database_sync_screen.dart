@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/database_models.dart';
 import '../services/api_service.dart';
 import '../UILib/uilib.dart';
+import 'cron_jobs_dialog.dart';
 
 class DatabaseSyncScreen extends StatefulWidget {
   const DatabaseSyncScreen({super.key});
@@ -171,6 +172,14 @@ class _DatabaseSyncScreenState extends State<DatabaseSyncScreen> {
     );
   }
 
+  void _showCronJobsDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const CronJobsDialog(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -179,6 +188,11 @@ class _DatabaseSyncScreenState extends State<DatabaseSyncScreen> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.schedule),
+            onPressed: () => _showCronJobsDialog(),
+            tooltip: 'Gerenciar Cron Jobs',
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _isLoading ? null : _loadData,

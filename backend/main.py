@@ -8,6 +8,8 @@ import os
 
 from app.core.config import settings
 from app.routes.database_routes import router as database_router
+from app.routes.cron_routes import router as cron_router
+from app.services.cron_service import cron_service
 
 # Carrega variáveis de ambiente
 load_dotenv()
@@ -39,6 +41,7 @@ app.add_middleware(
 
 # Inclusão das rotas
 app.include_router(database_router)
+app.include_router(cron_router)
 
 
 @app.get("/")
@@ -66,6 +69,13 @@ async def global_exception_handler(request, exc):
         status_code=500,
         content={"detail": "Erro interno do servidor"}
     )
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Evento executado quando a aplicação é encerrada"""
+    logger.info("Encerrando aplicação...")
+    cron_service.shutdown()
 
 
 if __name__ == "__main__":
